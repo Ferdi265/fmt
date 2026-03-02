@@ -10,6 +10,7 @@
 
 #include <stdbool.h>  // bool
 #include <stddef.h>   // size_t
+#include <stdio.h>    // FILE
 
 #ifdef __cplusplus
 extern "C" {
@@ -46,6 +47,10 @@ enum { fmt_error = -1, fmt_error_invalid_arg = -2 };
 
 int fmt_vformat(char* buffer, size_t size, const char* fmt, const fmt_arg* args,
                 size_t num_args);
+int fmt_vprint(FILE* stream, const char* fmt, const fmt_arg* args,
+               size_t num_args);
+int fmt_vprintln(FILE* stream, const char* fmt, const fmt_arg* args,
+                 size_t num_args);
 
 #ifdef __cplusplus
 }
@@ -184,6 +189,18 @@ typedef enum {} fmt_signed_char;
                 FMT_EXPAND(FMT_VA_SELECT(FMT_MAKE_NULL, FMT_MAKE_ARGLIST, \
                                          ##__VA_ARGS__)(__VA_ARGS__)),    \
                 FMT_NARG(__VA_ARGS__))
+
+#  define fmt_print(stream, fmt, ...)                                    \
+    fmt_vprint((stream), (fmt),                                          \
+               FMT_EXPAND(FMT_VA_SELECT(FMT_MAKE_NULL, FMT_MAKE_ARGLIST, \
+                                        ##__VA_ARGS__)(__VA_ARGS__)),    \
+               FMT_NARG(__VA_ARGS__))
+
+#  define fmt_println(stream, fmt, ...)                                    \
+    fmt_vprintln((stream), (fmt),                                          \
+                 FMT_EXPAND(FMT_VA_SELECT(FMT_MAKE_NULL, FMT_MAKE_ARGLIST, \
+                                          ##__VA_ARGS__)(__VA_ARGS__)),    \
+                 FMT_NARG(__VA_ARGS__))
 
 #endif  // __cplusplus
 
