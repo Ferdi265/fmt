@@ -168,11 +168,22 @@ typedef enum {} fmt_signed_char;
 #  define FMT_MAP(f, ...) \
     FMT_CAT(FMT_MAP_, FMT_NARG(__VA_ARGS__))(f, ##__VA_ARGS__)
 
+// select between two expressions depending on whether __VA_ARGS__ is empty
+// expands to e if __VA_ARGS__ is empty and n otherwise
+#  define FMT_VA_SELECT(e, n, ...)                                            \
+    FMT_NARG_(dummy, ##__VA_ARGS__, n, n, n, n, n, n, n, n, n, n, n, n, n, n, \
+              n, n, e)
+
+#  define FMT_MAKE_NULL(...) NULL
+#  define FMT_MAKE_ARGLIST(...) \
+    (fmt_arg[]) { FMT_MAP(FMT_MAKE_ARG, ##__VA_ARGS__) }
+#  define FMT_EXPAND(v) v
+
 #  define fmt_format(buffer, size, fmt, ...)                              \
-    fmt_vformat(                                                          \
-        (buffer), (size), (fmt),                                          \
-        (fmt_arg[]){{fmt_int}, FMT_MAP(FMT_MAKE_ARG, ##__VA_ARGS__)} + 1, \
-        FMT_NARG(__VA_ARGS__))
+    fmt_vformat((buffer), (size), (fmt),                                  \
+                FMT_EXPAND(FMT_VA_SELECT(FMT_MAKE_NULL, FMT_MAKE_ARGLIST, \
+                                         ##__VA_ARGS__)(__VA_ARGS__)),    \
+                FMT_NARG(__VA_ARGS__))
 
 #endif  // __cplusplus
 
